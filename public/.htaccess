@@ -1,0 +1,56 @@
+# Vite React SPA rewrite rules for cPanel/Apache
+# Upload dist contents into btclienterminal.com/testzen/ on the server.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /testzen/
+
+  # Allow existing files and directories
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Allow requests for assets (js, css, images, fonts, etc.)
+  RewriteCond %{REQUEST_URI} \.(js|css|png|jpg|jpeg|gif|ico|svg|webp|woff|woff2|ttf|eot|map)$ [NC]
+  RewriteRule ^ - [L]
+
+  # Allow requests to /testzen/assets/ directory (Vite output chunks)
+  RewriteCond %{REQUEST_URI} ^/testzen/assets/
+  RewriteRule ^ - [L]
+
+  # Route all other requests to index.html for SPA client routing
+  RewriteRule ^ /testzen/index.html [L]
+</IfModule>
+
+# Add MIME types for assets
+<IfModule mod_mime.c>
+  AddType application/javascript js
+  AddType text/css css
+  AddType image/svg+xml svg svgz
+  AddEncoding gzip svgz
+</IfModule>
+
+# Prevent caching of the HTML entry point so new chunk hashes load
+<IfModule mod_headers.c>
+  <Files "index.html">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </Files>
+</IfModule>
+
+# Cache settings for static assets
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType font/woff2 "access plus 1 month"
+  ExpiresByType font/woff "access plus 1 month"
+</IfModule>
+
+# Force HTTPS
+<IfModule mod_rewrite.c>
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
