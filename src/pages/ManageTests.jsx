@@ -25,7 +25,7 @@ export default function ManageTests() {
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    api.get('/organizations').then(res => setOrgs(res.data)).catch(() => {});
+    api.get('/organizations').then(res => setOrgs(res.data)).catch(() => { });
   }, []);
 
   const loadData = async () => {
@@ -95,7 +95,7 @@ export default function ManageTests() {
     }
   };
 
-  const getTestLink = (uniqueLink) => `${window.location.origin}/testzen/test/${uniqueLink}`;
+  const getTestLink = (uniqueLink) => `${window.location.origin}/test/${uniqueLink}`;
 
   const copyLink = (uniqueLink) => {
     navigator.clipboard.writeText(getTestLink(uniqueLink));

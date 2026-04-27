@@ -8,7 +8,7 @@ import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter basename="/testzen">
+    <BrowserRouter>
       <AuthProvider>
         <App />
         <Toaster position="top-right" />

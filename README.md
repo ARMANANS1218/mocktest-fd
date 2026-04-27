@@ -93,4 +93,4 @@ npm run preview
 ## Notes
 
 - Run the initial setup endpoint once if required by auth bootstrap: `/api/auth/setup`
-- Update `FRONTEND_URL` and `VITE_BACKEND_URL` for production deployment.
+- For production deployment, host the frontend on `chatnexusterminal.com` and point `VITE_BACKEND_URL` / `VITE_API_BASE_URL` to the backend at `testzen.btclienterminal.com`.
