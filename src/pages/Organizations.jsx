@@ -8,7 +8,7 @@ export default function Organizations() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState({ name: '', description: '' });
+  const [form, setForm] = useState({ name: '', description: '', passingThreshold: 75 });
   const [saving, setSaving] = useState(false);
 
   const loadOrgs = () => {
@@ -21,7 +21,7 @@ export default function Organizations() {
   useEffect(() => { loadOrgs(); }, []);
 
   const resetForm = () => {
-    setForm({ name: '', description: '' });
+    setForm({ name: '', description: '', passingThreshold: 75 });
     setEditingId(null);
     setShowForm(false);
   };
@@ -29,6 +29,10 @@ export default function Organizations() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) return toast.error('Organization name is required');
+    const threshold = Number(form.passingThreshold);
+    if (!Number.isFinite(threshold) || threshold < 0 || threshold > 100) {
+      return toast.error('Passing threshold must be between 0 and 100');
+    }
     setSaving(true);
     try {
       if (editingId) {
@@ -48,7 +52,11 @@ export default function Organizations() {
   };
 
   const handleEdit = (org) => {
-    setForm({ name: org.name, description: org.description || '' });
+    setForm({
+      name: org.name,
+      description: org.description || '',
+      passingThreshold: org.passingThreshold ?? 75
+    });
     setEditingId(org._id);
     setShowForm(true);
   };
@@ -96,6 +104,15 @@ export default function Organizations() {
                 placeholder="Brief description of the organization"
                 rows={1}
               />
+              <Input
+                label="Passing Threshold (%)"
+                type="number"
+                min="0"
+                max="100"
+                step="1"
+                value={form.passingThreshold}
+                onChange={e => setForm({ ...form, passingThreshold: e.target.value })}
+              />
             </div>
             <div className="mt-4 flex justify-end gap-2">
               <Button type="button" variant="secondary" onClick={resetForm}>Cancel</Button>
@@ -136,6 +153,9 @@ export default function Organizations() {
               {org.description && (
                 <p className="text-sm text-gray-500 mb-3">{org.description}</p>
               )}
+              <p className="text-sm text-gray-600 mb-2">
+                Passing threshold: <span className="font-semibold text-gray-900">{org.passingThreshold ?? 75}%</span>
+              </p>
               <p className="text-xs text-gray-400 mb-4">
                 Created {new Date(org.createdAt).toLocaleDateString()}
               </p>

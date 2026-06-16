@@ -109,6 +109,7 @@ export default function QuestionPapers() {
                     </Badge>
                     <Badge color="gray">{paper.questions?.length || 0} questions</Badge>
                     <Badge color="blue">{paper.totalMarks} marks</Badge>
+                    <Badge color="green">Pass {paper.organization?.passingThreshold ?? 75}%</Badge>
                     <span className="text-xs text-gray-400">
                       Created {new Date(paper.createdAt).toLocaleDateString()}
                     </span>

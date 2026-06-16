@@ -1,9 +1,9 @@
 # Vite React SPA rewrite rules for cPanel/Apache
-# Upload dist contents into chatnexusterminal.com/ on the server.
+# Upload dist contents into chatnexusterminal.uk/TESTZEN/ on the server.
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /
+  RewriteBase /TESTZEN/
 
   # Never rewrite API requests; let the backend handle them.
   RewriteRule ^api/ - [L]
@@ -17,12 +17,12 @@
   RewriteCond %{REQUEST_URI} \.(js|css|png|jpg|jpeg|gif|ico|svg|webp|woff|woff2|ttf|eot|map)$ [NC]
   RewriteRule ^ - [L]
 
-  # Allow requests to /assets/ directory (Vite output chunks)
-  RewriteCond %{REQUEST_URI} ^/assets/
+  # Allow requests to /TESTZEN/assets/ directory (Vite output chunks)
+  RewriteCond %{REQUEST_URI} ^/TESTZEN/assets/
   RewriteRule ^ - [L]
 
   # Route all other requests to index.html for SPA client routing
-  RewriteRule ^ /index.html [L]
+  RewriteRule ^ /TESTZEN/index.html [L]
 </IfModule>
 
 # Add MIME types for assets

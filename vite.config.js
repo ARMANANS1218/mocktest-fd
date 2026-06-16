@@ -6,7 +6,7 @@ export default defineConfig(({ mode }) => {
 
 
   return {
-    base: '/',
+    base: '/TESTZEN/',
     plugins: [react()],
     server: {
       port: parseInt(env.VITE_DEV_PORT) || 5173,

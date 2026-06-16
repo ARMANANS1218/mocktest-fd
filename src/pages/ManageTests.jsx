@@ -6,6 +6,11 @@ import toast from 'react-hot-toast';
 const ROLE_LABELS = { agent: 'Agent', tl: 'Team Leader', qa: 'QA' };
 const ROLE_COLORS = { agent: 'blue', tl: 'purple', qa: 'amber' };
 
+const getOrgThreshold = (orgs, orgId) => {
+  const org = orgs.find(o => o._id === orgId);
+  return org?.passingThreshold ?? 75;
+};
+
 export default function ManageTests() {
   const [tests, setTests] = useState([]);
   const [papers, setPapers] = useState([]);
@@ -63,7 +68,13 @@ export default function ManageTests() {
 
     setCreating(true);
     try {
-      await api.post('/tests', form);
+      await api.post('/tests', {
+        ...form,
+        gradingConfig: {
+          mode: 'pass_fail',
+          passPercentage: getOrgThreshold(orgs, form.organization)
+        }
+      });
       toast.success('Test created');
       setShowCreate(false);
       setForm({ title: '', organization: '', targetRole: 'agent', questionPaper: '', timerMode: 'full', fullTimerMinutes: 30 });
@@ -95,7 +106,7 @@ export default function ManageTests() {
     }
   };
 
-  const getTestLink = (uniqueLink) => `${window.location.origin}/test/${uniqueLink}`;
+  const getTestLink = (uniqueLink) => `${window.location.origin}/TESTZEN/test/${uniqueLink}`;
 
   const copyLink = (uniqueLink) => {
     navigator.clipboard.writeText(getTestLink(uniqueLink));
@@ -195,6 +206,12 @@ export default function ManageTests() {
                   value={form.fullTimerMinutes}
                   onChange={e => setForm({ ...form, fullTimerMinutes: Number(e.target.value) })}
                 />
+              )}
+              {form.organization && (
+                <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm">
+                  <p className="font-medium text-gray-700">Passing Threshold</p>
+                  <p className="text-gray-600">{getOrgThreshold(orgs, form.organization)}% and above pass</p>
+                </div>
               )}
             </div>
             <div className="mt-4 flex justify-end">

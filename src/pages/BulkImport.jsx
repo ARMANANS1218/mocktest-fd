@@ -42,6 +42,11 @@ Q: Describe how you would handle an angry customer in live chat.
 Type: written
 Marks: 5`;
 
+const getOrgThreshold = (orgs, orgId) => {
+  const org = orgs.find(o => o._id === orgId);
+  return org?.passingThreshold ?? 75;
+};
+
 function parseTextFormat(text) {
   const questions = [];
   const blocks = text.split(/\n\s*\n/).filter(b => b.trim());
@@ -198,6 +203,12 @@ export default function BulkImport() {
             onChange={e => setDescription(e.target.value)}
             placeholder="Brief description"
           />
+          {organization && (
+            <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm">
+              <p className="font-medium text-gray-700">Organization Passing Threshold</p>
+              <p className="text-gray-600">{getOrgThreshold(orgs, organization)}% and above pass</p>
+            </div>
+          )}
         </div>
         <Textarea
           label="Instructions for Candidates"

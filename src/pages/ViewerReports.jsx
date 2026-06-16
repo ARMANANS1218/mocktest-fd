@@ -134,7 +134,8 @@ export default function ViewerReports() {
                 </thead>
                 <tbody>
                   {attempts.map((a, idx) => {
-                    const passed = a.percentage >= 50;
+                    const resultLabel = a.resultLabel || 'Pending';
+                    const passed = resultLabel !== 'Fail' && resultLabel !== 'Pending';
                     return (
                       <tr key={a._id} className="border-b border-gray-100 hover:bg-gray-50">
                         <td className="px-4 py-3 text-gray-500">{idx + 1}</td>
@@ -148,7 +149,7 @@ export default function ViewerReports() {
                           {a.percentage}%
                         </td>
                         <td className="px-4 py-3">
-                          <Badge color={passed ? 'green' : 'red'}>{passed ? 'Passed' : 'Needs Improvement'}</Badge>
+                          <Badge color={passed ? 'green' : 'red'}>{passed ? resultLabel : 'Fail'}</Badge>
                         </td>
                         <td className="px-4 py-3">
                           <Button variant="ghost" size="sm" onClick={() => downloadIndividualPDF(a._id, a.fullName)}>
