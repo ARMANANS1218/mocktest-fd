@@ -5,8 +5,10 @@
   RewriteEngine On
   RewriteBase /TESTZEN/
 
-  # Never rewrite API requests; let the backend handle them.
-  RewriteRule ^api/ - [L]
+  # Proxy API requests through the same origin so browsers do not need CORS.
+  # Requires Apache mod_proxy/mod_proxy_http on the hosting account.
+  RewriteCond %{REQUEST_URI} ^/TESTZEN/api/(.*)$
+  RewriteRule ^api/(.*)$ https://testzen.chatnexusterminal.uk/api/$1 [P,L]
 
   # Allow existing files and directories
   RewriteCond %{REQUEST_FILENAME} -f [OR]

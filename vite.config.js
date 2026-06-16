@@ -11,6 +11,11 @@ export default defineConfig(({ mode }) => {
     server: {
       port: parseInt(env.VITE_DEV_PORT) || 5173,
       proxy: {
+        '/TESTZEN/api': {
+          target: env.VITE_BACKEND_URL || 'http://localhost:5000',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/TESTZEN\/api/, '/api')
+        },
         '/api': {
           target: env.VITE_BACKEND_URL || 'http://localhost:5000',
           changeOrigin: true
