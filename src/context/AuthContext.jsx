@@ -24,7 +24,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (username, password) => {
-    const res = await api.post('/auth/login', { username, password });
+    const res = await api.post('/auth/login', JSON.stringify({ username, password }), {
+      headers: { 'Content-Type': 'text/plain' }
+    });
     const { token, admin: adminData } = res.data;
     localStorage.setItem('token', token);
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
