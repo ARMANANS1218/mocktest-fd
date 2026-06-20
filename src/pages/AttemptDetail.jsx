@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api, { getApiUrl } from '../api';
+import api from '../api';
 import { Card, Badge, Loader, Button, Input } from '../components/UI';
 import toast from 'react-hot-toast';
 
@@ -21,12 +21,30 @@ export default function AttemptDetail() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  const downloadFile = async (url, filename) => {
+    try {
+      const res = await api.get(url, { responseType: 'blob' });
+      const blob = new Blob([res.data]);
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(link.href);
+    } catch {
+      toast.error('Failed to download report');
+    }
+  };
+
+  const safeFileName = (value) => (value || 'report').replace(/[^a-zA-Z0-9\s-]/g, '').trim().replace(/\s+/g, '_');
+
   const downloadPDF = () => {
-    window.open(getApiUrl(`/reports/candidate/${id}/pdf`), '_blank');
+    downloadFile(`/reports/candidate/${id}/pdf`, `${safeFileName(attempt?.fullName || id)}_Report.pdf`);
   };
 
   const downloadExcel = () => {
-    window.open(getApiUrl(`/reports/candidate/${id}/excel`), '_blank');
+    downloadFile(`/reports/candidate/${id}/excel`, `${safeFileName(attempt?.fullName || id)}_Report.xlsx`);
   };
 
   const hasWrittenQuestions = attempt?.answers?.some(a => a.questionType === 'written');
@@ -246,3 +264,5 @@ export default function AttemptDetail() {
     </div>
   );
 }
+
+

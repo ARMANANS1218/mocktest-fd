@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
-import { Card, Badge, Loader, EmptyState, Select } from '../components/UI';
+import { Card, Badge, Loader, EmptyState, Select, Button } from '../components/UI';
 import toast from 'react-hot-toast';
 
 const ROLE_LABELS = { agent: 'Agent', tl: 'Team Leader', qa: 'QA' };
@@ -16,6 +16,7 @@ export default function CandidateAttempts() {
   const [filterOrg, setFilterOrg] = useState('');
   const [filterRole, setFilterRole] = useState('');
   const [deleting, setDeleting] = useState(null);
+  const [downloading, setDownloading] = useState(null);
 
   useEffect(() => {
     Promise.all([
@@ -24,18 +25,59 @@ export default function CandidateAttempts() {
     ]).catch(() => {});
   }, []);
 
-  useEffect(() => {
-    setLoading(true);
+  const buildFilterParams = () => {
     const params = new URLSearchParams();
     if (filterTest) params.set('testId', filterTest);
     if (filterStatus) params.set('status', filterStatus);
     if (filterOrg) params.set('organization', filterOrg);
     if (filterRole) params.set('targetRole', filterRole);
+    return params;
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    const params = buildFilterParams();
     api.get(`/attempts?${params.toString()}`)
       .then(res => setAttempts(res.data))
       .catch(() => toast.error('Failed to load attempts'))
       .finally(() => setLoading(false));
   }, [filterTest, filterStatus, filterOrg, filterRole]);
+
+  const downloadFile = async (url, filename, key) => {
+    setDownloading(key);
+    try {
+      const res = await api.get(url, { responseType: 'blob' });
+      const blob = new Blob([res.data]);
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(link.href);
+    } catch {
+      toast.error('Failed to download report');
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  const safeFileName = (value) => (value || 'report').replace(/[^a-zA-Z0-9\s-]/g, '').trim().replace(/\s+/g, '_');
+
+  const downloadCandidatePDF = (attempt) => {
+    downloadFile(`/reports/candidate/${attempt._id}/pdf`, `${safeFileName(attempt.fullName)}_Report.pdf`, `pdf-${attempt._id}`);
+  };
+
+  const downloadCandidateExcel = (attempt) => {
+    downloadFile(`/reports/candidate/${attempt._id}/excel`, `${safeFileName(attempt.fullName)}_Report.xlsx`, `excel-${attempt._id}`);
+  };
+
+  const downloadAllPDF = () => {
+    const params = buildFilterParams();
+    const query = params.toString();
+    const orgName = orgs.find(o => o._id === filterOrg)?.name || 'All_Organizations';
+    downloadFile(`/reports/attempts/pdf${query ? `?${query}` : ''}`, `${safeFileName(orgName)}_Attempts.pdf`, 'all-pdf');
+  };
 
   const handleDelete = async (id, name) => {
     if (!window.confirm(`Delete attempt by "${name}"? This cannot be undone.`)) return;
@@ -53,9 +95,16 @@ export default function CandidateAttempts() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Candidate Attempts</h1>
-        <p className="text-sm text-gray-500 mt-1">View all test submissions</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Candidate Attempts</h1>
+          <p className="text-sm text-gray-500 mt-1">View all test submissions</p>
+        </div>
+        {attempts.length > 0 && (
+          <Button variant="secondary" onClick={downloadAllPDF} disabled={downloading === 'all-pdf'}>
+            {downloading === 'all-pdf' ? 'Downloading...' : 'Download All PDF'}
+          </Button>
+        )}
       </div>
 
       {/* Filters */}
@@ -144,6 +193,22 @@ export default function CandidateAttempts() {
                     <td className="px-5 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Link to={`/attempts/${a._id}`} className="text-sm text-indigo-600 hover:underline">View</Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => downloadCandidatePDF(a)}
+                          disabled={downloading === `pdf-${a._id}`}
+                        >
+                          {downloading === `pdf-${a._id}` ? '...' : 'PDF'}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => downloadCandidateExcel(a)}
+                          disabled={downloading === `excel-${a._id}`}
+                        >
+                          {downloading === `excel-${a._id}` ? '...' : 'Excel'}
+                        </Button>
                         <button
                           onClick={() => handleDelete(a._id, a.fullName)}
                           disabled={deleting === a._id}
@@ -163,3 +228,6 @@ export default function CandidateAttempts() {
     </div>
   );
 }
+
+
+
